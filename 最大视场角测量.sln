@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "最大视场角测量", "最大视场角测量\最大视场角测量.vcxproj", "{FFE218D7-8709-4A86-8E3C-4E807E5BB65D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FFE218D7-8709-4A86-8E3C-4E807E5BB65D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FFE218D7-8709-4A86-8E3C-4E807E5BB65D}.Debug|Win32.Build.0 = Debug|Win32
+		{FFE218D7-8709-4A86-8E3C-4E807E5BB65D}.Release|Win32.ActiveCfg = Release|Win32
+		{FFE218D7-8709-4A86-8E3C-4E807E5BB65D}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
