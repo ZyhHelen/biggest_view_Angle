@@ -79,6 +79,8 @@ int ImageBinarization(Mat src) {   /*对灰度图像二值化，自适应门限threshold*/
 // 对rows、cols、data、step、channels的理解 https://www.douban.com/note/265479171/
 // OpenCV2:Mat属性type，depth，step http://www.tuicool.com/articles/eUbuYn
 // 实现原理：http://blog.csdn.net/a153375250/article/details/50970104
+// 七种阈值常见分割代码：http://blog.csdn.net/xw20084898/article/details/17564957
+
 int getAdaptiveThreshold(Mat img) {  
     int T = 0;             // 阈值  
     int height = img.rows; // rows 是 行数 相当于 height 对应 .y
@@ -141,6 +143,55 @@ int getAdaptiveThreshold(Mat img) {
     }  
     return T;   
 }  
+
+// 迭代法求自适应阈值
+// 七种阈值常见分割代码：http://blog.csdn.net/xw20084898/article/details/17564957 
+// 迭代阈值法：http://blog.csdn.net/a361251388leaning/article/details/50198351
+int IterationGetThreshold(Mat image) {
+	int height = image.rows;
+	int width = image.cols;
+	int step = image.step;
+	uchar *data =  uchar* data  = (uchar*)img.data;  // Mat对象中的一个指针，指向内存中存放矩阵数据的一块内存 (uchar* data) 
+	double Histogram[256]={0}; // = new double[256]; // 灰度直方图  
+
+	// 计算直方图
+	for(int i = 0; i < height; ++i) {
+		for(int j = 0; j< width; ++j) {
+			double temp = data[i*step + j * 3] * 0.114 + data[i*step + j * 3+1] * 0.587 + data[i*step + j * 3+2] * 0.299; 
+			temp = temp < 0 ? 0 : temp;  
+            temp = temp > 255 ? 255 : temp; 
+            Histogram[(int)temp]++；
+		}
+	}
+
+	// 求取图像的平均灰度值作为图像的初始阈值
+	int threshold = 0;
+	for(int i = 0; i < 256; ++i) {
+		threshold += Histogram[i] * i;
+	}
+	threshold /= height * width;
+
+	int newThreashold = 0;
+	double sum0 = 0;
+	double sum1 = 0;
+	double N0 = 0;
+	double N1 = 0;
+
+	while(threshold != newThreashold) {
+		for(int i = 0; i < threshold; ++i) {
+			sum0 += Histogram[i] * i;
+			N0 += Histogram[i];
+		}
+
+		for(int j=threshold; j<256; ++j) {
+			sum1 += Histogram[j] * j;
+			N1 += Histogram[j];
+		}
+
+		int newThreashold = (sum0 / N0 + sum1 / N1) / 2;
+	}
+
+}
 
 // 对图像进行：灰度 --> 二值化 --> 滤波
 Mat preProcess(const char * image) {
@@ -207,6 +258,8 @@ Mat getROI(Mat image, const char * srcImage) {
 	// Mat imageROI = image(Rect(0, 180, image.cols * 0.5 - 3, image.rows * 0.5 - 29 - 180));
 	// std::cout<<imageROI.rows<<" "<<imageROI.cols<<std::endl;
 
+
+	// 断点处是否可以通过膨胀操作连接：http://www.opencv.org.cn/opencvdoc/2.3.2/html/doc/tutorials/imgproc/erosion_dilatation/erosion_dilatation.html
 	imageROI.at<uchar>(74, 90) = 255;
 	imageROI.at<uchar>(75, 90) = 255;	
 	imageROI.at<uchar>(76, 90) = 255;
@@ -255,7 +308,7 @@ float getResult(const char *image) {
 	
 	float num2 = getPrecision(image);
 	//std::cout<<"num2 is"<<num2<<std::endl;
-//	float num2 = 0;
+    //float num2 = 0;
 	int num1 = getCounterNum(imageROI);
 
 	return num1 + num2;
@@ -339,7 +392,7 @@ float getPrecision(const char *image) {
 	//	std::cout<<" "<<" "<<(int)data[j];
 	//}
 
-   uchar *data = dstImage.ptr<uchar>(275);
+   
 	//std::cout<<"row is: "<<row<<"col is: "<<col<<std::endl;
 	//for(int k=0; k<col; k+=2) {
 	//	std::cout<<center.y << " " << k << " " <<dstImage.at<Vec2b>(center.y, k)<<std::endl;
@@ -349,6 +402,9 @@ float getPrecision(const char *image) {
 	//		std::cout<<grayImage.at<uchar>(i, j)<<std::endl;
 	//	}
 	//}
+
+	// 
+	uchar *data = dstImage.ptr<uchar>(center.y - 4);
 
 	int j = 0;
 	// 移动到最外层轮廓的边缘
@@ -374,6 +430,9 @@ float getPrecision(const char *image) {
 		num2++;
 		j++;
 	}
+	return num1/num2;
+
+
 
 	std::cout<<"num1: "<<num1<<" "<<" num2 "<<num2<<std::endl;
 	//waitKey(0);
@@ -420,7 +479,9 @@ void binaryZation(const char * image) {
 /////////////////////////////////////////////////////////////////////////////////////
 // 备注：
 //		测试：利用霍夫圆检测的可行性
-// 
+//      霍夫圆变换：http://www.opencv.org.cn/opencvdoc/2.3.2/html/doc/tutorials/imgproc/imgtrans/hough_circle/hough_circle.html
+//      HoughCircles 函数详解： http://blog.csdn.net/poem_qianmo/article/details/26977557
+//      实现原理：http://blog.csdn.net/zhazhiqiang/article/details/51097439
 Point getCircleCenter(const char *image) {
 	Mat srcImage = imread(image);
 	// cout<<srcImage.size()<<endl;
